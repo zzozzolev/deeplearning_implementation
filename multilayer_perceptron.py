@@ -57,7 +57,7 @@ optimizer = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(loss)
 initializer = tf.global_variables_initializer()
 
 # open session
-with open(tf.Session()) as sess:
+with tf.Session() as sess:
     sess.run(initializer)
     
     # training cycle
