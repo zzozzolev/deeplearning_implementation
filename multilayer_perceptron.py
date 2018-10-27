@@ -27,13 +27,13 @@ Y = tf.placeholder(tf.float32, shape=[None, n_class])
 weights = {
     'w1': tf.Variable(tf.random_uniform([input_size, n_hidden1])),
     'w2': tf.Variable(tf.random_uniform([n_hidden1, n_hidden2])),
-    'fnn': tf.Variable(tf.random_uniform([n_hidden2, n_class]))
+    'ffn': tf.Variable(tf.random_uniform([n_hidden2, n_class]))
 }
 
 biases = {
     'b1': tf.Variable(tf.random_uniform([n_hidden1])),
     'b2': tf.Variable(tf.random_uniform([n_hidden2])),
-    'fnn': tf.Variable(tf.random_uniform([n_class]))
+    'ffn': tf.Variable(tf.random_uniform([n_class]))
 }
 
 # create model
