@@ -15,7 +15,7 @@ print_step = 1
 n_hidden1 = 256
 n_hidden2 = 512
 n_input = train.images.shape[0]
-n_batch = n_input // batch_size + (lambda x: 1 if n_input%batch_size != 0 else 0)(n_input, batch_size)
+n_batch = n_input // batch_size
 input_size = train.images.shape[1]
 n_class = 10
 
