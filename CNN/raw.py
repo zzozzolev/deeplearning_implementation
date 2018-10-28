@@ -15,71 +15,66 @@ print_step = 10
 # network parameters
 input_dim = mnist.train.images.shape[1]
 n_class = 10
-kernel_size = 3
-stride = 1
 dropout = 0.9
+n_filters = [32, 64]
+n_channel = 1
+kernel_size = 3
+pool_kernel_size = 2
 
 # graph input
 X = tf.placeholder(tf.float32, [None, input_dim])
 Y = tf.placeholder(tf.float32, [None, n_class])
 keep_prob = tf.placeholder(tf.float32)
 
-def conv2d(X, kernel, bias, stride):
-    output_size = int((X.shape[1].value - kernel_size) / stride + 1)
-    output = tf.Variable(tf.random_normal([batch_size, output_size, output_size, 1]))
+def conv2d(x, i):
+    with tf.variable_scope('conv'+str(i)):
+        w = tf.Variable(tf.random_normal([kernel_size, kernel_size, n_channel, n_filters[i]]))
+        b = tf.Variable(tf.random_normal[n_filters[i]])
+        conv = tf.nn.conv2d(x, w, strides=[1, kernel_size, kernel_size, 1], padding='SAME') + b
+        output = tf.nn.relu(conv)
 
-    for n_batch in range(batch_size):
-        for i in range(output_size):
-            for j in range(output_size):
-                mul = tf.matmul(X[n_batch, i*stride:i*stride+kernel_size, j*stride:i*stride+kernel_size, :], kernel, transpose_b=True) + bias
-                acti = tf.nn.relu(mul)
-                output = tf.assign(output[n_batch][i][j][0], tf.reduce_sum(acti))
-    
     return output
 
 
-def maxpool2d(X):
-    output_size = int((X.shape[0].value - kernel_size) / stride + 1)
-    output = tf.Variable(tf.random_normal([batch_size, output_size, output_size, 1]))
-
-    for n_batch in range(batch_size):
-        for i in range(output_size):
-            for j in range(output_size):
-                max_val = tf.argmax(X[n_batch, i*stride:i*stride+kernel_size, i*stride:i*stride+kernel_size, :], axis=0)
-                output = tf.assign(output[n_batch][i][j][0], max_val)
+def maxpool2d(x):
+    max_pool = tf.nn.max_pool(x, 
+        [1, pool_kernel_size, pool_kernel_size, 1], 
+        [1, pool_kernel_size, pool_kernel_size, 1], 
+        padding="SAME")
     
-    return output
+    return max_pool
 
 
 def conv_net(X, dropout):
     height = int(np.sqrt(X.shape[1].value))
     width = height
-    channel = 1
-    X = tf.reshape(X, [-1, height, width, channel])
+    X = tf.reshape(X, [-1, height, width, n_channel])
 
-    conv_layer1 = maxpool2d(conv2d(X, w['k1'], b['b1'], stride))
-    conv_layer2 = maxpool2d(conv2d(conv_layer1, w['k2'], b['b2'], stride))
+
+    for i in range(2):
+        conv = conv2d(X, i)
+        X = maxpool2d(conv)
+
+    shape_list = X.get_shape().as_list()
+
+    reshaped = tf.reshape(X, [-1, shape_list[1]*shape_list[2]*shape_list[3]])
+
+    w = {
+        'ffn': tf.Variable(tf.random_normal([shape_list[1]*shape_list[2]*shape_list[3], 256])),
+        'out': tf.Variable(tf.random_normal([256, n_class]))
+    }
     
-    reshaped = tf.reshape(conv_layer2, [None, 256])
+    b = {
+        'ffn': tf.Variable(tf.random_normal([256])),
+        'out': tf.Variable(tf.random_normal([n_class]))
+    }
+    
+    ffn = tf.matmul(reshaped, w['ffn']) + b['ffn']
+    out = tf.matmul(ffn, w['out']) + b['out']
 
-    fnn = tf.matmul(reshaped, w['ffn']) + b['ffn']
-    dropout = tf.nn.dropout(fnn, dropout)
+    dropout = tf.nn.dropout(out, dropout)
 
     return dropout
-
-
-# weights & biases
-w = {
-    'k1': tf.Variable(tf.random_normal([None, kernel_size, kernel_size, 1])),
-    'k2': tf.Variable(tf.random_normal([None, kernel_size, kernel_size, 1])),
-    'ffn': tf.Variable(tf.random_normal([256, n_class]))
-}
-
-b = {
-    'b1': tf.Variable(tf.random_normal([kernel_size, kernel_size, 1])),
-    'b2': tf.Variable(tf.random_normal([kernel_size, kernel_size, 1])),
-    'ffn': tf.Variable(tf.random_normal([256]))
-}
 
 logits = conv_net(X, keep_prob)
 pred = tf.nn.softmax(logits)
