@@ -17,20 +17,21 @@ input_dim = mnist.train.images.shape[1]
 n_class = 10
 kernel_size = 3
 stride = 1
+dropout = 0.9
 
 # graph input
 X = tf.placeholder(tf.float32, [None, input_dim])
 Y = tf.placeholder(tf.float32, [None, n_class])
-
+keep_prob = tf.placeholder(tf.float32)
 
 def conv2d(X, kernel, bias, stride):
-    output_size = (X.shape[1] - kernel_size) / stride + 1
-    output = tf.Variable(tf.zeros([batch_size, output_size, output_size, 1]))
+    output_size = int((X.shape[1].value - kernel_size) / stride + 1)
+    output = tf.Variable(tf.random_normal([batch_size, output_size, output_size, 1]))
 
     for n_batch in range(batch_size):
         for i in range(output_size):
             for j in range(output_size):
-                mul = tf.matmul(X[i*stride:kernel_size, j*stride:kernel_size, :], kernel) + b
+                mul = tf.matmul(X[n_batch, i*stride:i*stride+kernel_size, j*stride:i*stride+kernel_size, :], kernel, transpose_b=True) + bias
                 acti = tf.nn.relu(mul)
                 output = tf.assign(output[n_batch][i][j][0], tf.reduce_sum(acti))
     
@@ -38,20 +39,20 @@ def conv2d(X, kernel, bias, stride):
 
 
 def maxpool2d(X):
-    output_size = (X.shape[0] - kernel_size) / stride + 1
-    output = tf.Variable(tf.zeros([output_size, output_size, 1]))
+    output_size = int((X.shape[0].value - kernel_size) / stride + 1)
+    output = tf.Variable(tf.random_normal([batch_size, output_size, output_size, 1]))
 
     for n_batch in range(batch_size):
         for i in range(output_size):
             for j in range(output_size):
-                max_val = tf.argmax(X[i*stride:kernel_size, j*stride:kernel_size, :], axis=0)
+                max_val = tf.argmax(X[n_batch, i*stride:i*stride+kernel_size, i*stride:i*stride+kernel_size, :], axis=0)
                 output = tf.assign(output[n_batch][i][j][0], max_val)
     
     return output
 
 
-def conv_net(X):
-    height = np.sqrt(X.shape[1])
+def conv_net(X, dropout):
+    height = int(np.sqrt(X.shape[1].value))
     width = height
     channel = 1
     X = tf.reshape(X, [-1, height, width, channel])
@@ -62,7 +63,7 @@ def conv_net(X):
     reshaped = tf.reshape(conv_layer2, [None, 256])
 
     fnn = tf.matmul(reshaped, w['ffn']) + b['ffn']
-    dropout = tf.nn.dropout(fnn)
+    dropout = tf.nn.dropout(fnn, dropout)
 
     return dropout
 
@@ -80,7 +81,7 @@ b = {
     'ffn': tf.Variable(tf.random_normal([256]))
 }
 
-logits = conv_net(X)
+logits = conv_net(X, keep_prob)
 pred = tf.nn.softmax(logits)
 
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits, Y))
@@ -96,14 +97,14 @@ with tf.Session() as sess:
 
     for step in (train_steps):
         x, y = mnist.train.next_batch()
-        _, c = sess.run([optimizer, loss], feed_dict={X: x, Y: y})
+        _, c = sess.run([optimizer, loss], feed_dict={X: x, Y: y, keep_prob:dropout})
 
         if step % print_step == 0:
-            acc = sess.run(acc, feed_dict={X: x, Y: y})
+            acc = sess.run(acc, feed_dict={X: x, Y: y, keep_prob:dropout})
             print("avg loss", c / batch_size)
             print("acc", acc)
 
             valid_x, valid_y = mnist.test.images.next_batch()
-            vaild_acc = sess.run(acc, feed_dict={X:valid_x, Y:valid_y})
+            vaild_acc = sess.run(acc, feed_dict={X:valid_x, Y:valid_y, keep_prob:dropout})
 
             print("valid_acc", valid_acc)
