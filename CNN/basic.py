@@ -20,6 +20,7 @@ dropout = 0.9
 n_channel = 1
 n_filters = [32, 32, 64]
 n_hidden = [256, 64, 10]
+kernel_size = 3
 
 # graph input
 X = tf.placeholder(tf.float32, [None, input_dim])
