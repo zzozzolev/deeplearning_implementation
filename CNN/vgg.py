@@ -19,3 +19,11 @@ n_class = 10
 dropout = 0.9
 n_filters = [32, 64, 128, 256, 256]
 n_hidden = [1024, 1024, 10]
+
+def get_placeholder(x, y):
+    x = tf.placeholder(tf.float32, shape=[None, x.shape[-1]])
+    y = tf.placeholder(tf.float32, shape=[None, y.shape[-1]])
+    keep_prob = tf.placeholder(tf.float32)
+    lr_rate = tf.placeholder(tf.float32)
+    
+    return x, y, keep_prob, lr_rate
