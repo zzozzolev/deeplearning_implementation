@@ -63,3 +63,13 @@ def max_pool2d(x):
     max_pool = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
     
     return max_pool
+
+def fc(x, i):
+    with tf.variable_scope('fc'+str(i)):
+        w = tf.get_variable("w", shape=[x.get_shape().as_list()[-1], n_hidden[i]],
+                                   initializer=tf.contrib.layers.xavier_initializer())
+        b = tf.get_variable("b", shape=[n_hidden[i]], initializer=tf.contrib.layers.xavier_initializer())
+        
+        matmul = tf.matmul(x, w) + b
+        
+        return matmul
