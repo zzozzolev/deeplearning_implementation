@@ -47,6 +47,15 @@ def maxpool2d(x):
     
     return max_pool
 
+def ffn(x, i):
+    with tf.variable_scope('ffn'+str(i)):
+        w = tf.get_variable("w", shape=[x.get_shape().as_list()[-1], n_hidden[i]], 
+                                initializer=tf.contrib.layers.xavier_initializer())
+        b = tf.get_variable("b", shape=[n_hidden[i]],
+                                initializer=tf.contrib.layers.xavier_initializer())
+        output = tf.matmul(x, w) + b
+        
+        return output
 
 def conv_net(X, dropout):
     height = int(np.sqrt(X.shape[1].value))
