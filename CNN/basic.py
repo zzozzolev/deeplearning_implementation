@@ -40,8 +40,8 @@ def conv2d(x, i):
 
 def maxpool2d(x):
     max_pool = tf.nn.max_pool(x, 
-        [1, pool_kernel_size, pool_kernel_size, 1], 
-        [1, pool_kernel_size, pool_kernel_size, 1], 
+        [1, 2, 2, 1], 
+        [1, 2, 2, 1], 
         padding="SAME")
     
     return max_pool
