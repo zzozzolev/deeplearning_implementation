@@ -73,3 +73,39 @@ def fc(x, i):
         matmul = tf.matmul(x, w) + b
         
         return matmul
+
+def vgg_net(x, dropout):
+    width = int(np.sqrt(x.shape[1].value))
+    height = width
+    x = tf.reshape(x, [-1, width, height, 1])
+    
+    # one conv layer
+    for i in range(2):
+        x = tf.contrib.layers.layer_norm(x)
+        x = conv_one(x, i)
+        x = max_pool2d(x)
+        print(x)
+    
+    # two conv layer
+    for i in range(2, 5):
+        x = tf.contrib.layers.layer_norm(x)
+        x = conv_two(x, i)
+        x = max_pool2d(x)
+        print(x)  
+    
+    shape_list = x.get_shape().as_list()
+    
+    x = tf.reshape(x, [-1, shape_list[1]*shape_list[2]*shape_list[3]])
+    print(x)
+    
+    # fc layer
+    for i in range(len(n_hidden)-1):
+        x = tf.contrib.layers.layer_norm(x)
+        x = fc(x, i)
+        x = tf.nn.relu(x)
+        x = tf.nn.dropout(x, dropout)
+    
+    # output layer
+    output = fc(x, len(n_hidden)-1)
+    
+    return output
