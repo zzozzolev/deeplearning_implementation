@@ -57,36 +57,37 @@ def ffn(x, i):
         
         return output
 
-def conv_net(X, dropout):
+def conv_net(X, drop_out):
     height = int(np.sqrt(X.shape[1].value))
     width = height
     X = tf.reshape(X, [-1, height, width, n_channel])
 
 
-    for i in range(2):
+    for i in range(len(n_filters)):
+        X = tf.contrib.layers.layer_norm(X)
         conv = conv2d(X, i)
         X = maxpool2d(conv)
+        X = tf.nn.dropout(X, drop_out)
+        print(X)
 
     shape_list = X.get_shape().as_list()
 
     reshaped = tf.reshape(X, [-1, shape_list[1]*shape_list[2]*shape_list[3]])
-
-    w = {
-        'ffn': tf.Variable(tf.random_normal([shape_list[1]*shape_list[2]*shape_list[3], 256])),
-        'out': tf.Variable(tf.random_normal([256, n_class]))
-    }
+    print(reshaped)
     
-    b = {
-        'ffn': tf.Variable(tf.random_normal([256])),
-        'out': tf.Variable(tf.random_normal([n_class]))
-    }
+    x = reshaped
     
-    ffn = tf.matmul(reshaped, w['ffn']) + b['ffn']
-    out = tf.matmul(ffn, w['out']) + b['out']
-
-    dropout = tf.nn.dropout(out, dropout)
-
-    return dropout
+    for i in range(len(n_hidden)-2):
+        x = tf.contrib.layers.layer_norm(x)
+        x = ffn(x, i)
+        x = tf.nn.relu(x)
+        x = tf.nn.dropout(x, drop_out)
+        print(x)
+        
+    output = ffn(x, len(n_hidden)-1)
+    print(output)
+    
+    return output
 
 logits = conv_net(X, keep_prob)
 pred = tf.nn.softmax(logits)
