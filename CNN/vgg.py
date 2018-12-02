@@ -27,3 +27,34 @@ def get_placeholder(x, y):
     lr_rate = tf.placeholder(tf.float32)
     
     return x, y, keep_prob, lr_rate
+
+def conv_one(x, i):
+    with tf.variable_scope('conv'+str(i)):
+        w = tf.get_variable("w", shape=[3, 3, x.get_shape().as_list()[-1], n_filters[i]],
+                                   initializer=tf.contrib.layers.xavier_initializer())
+        b = tf.get_variable("b", shape=[n_filters[i]], 
+                                    initializer=tf.contrib.layers.xavier_initializer())
+        
+        conv = tf.nn.conv2d(x, w, strides=[1, 1 , 1, 1], padding='SAME') + b
+        output = tf.nn.relu(conv)
+    
+    
+    return output
+
+def conv_two(x, i):
+    with tf.variable_scope('conv'+str(i)):
+        w1 = tf.get_variable("w1", shape=[3, 3, x.get_shape().as_list()[-1], n_filters[i]])
+        b1 = tf.get_variable("b1", shape=[n_filters[i]])
+        
+        conv1 = tf.nn.conv2d(x, w1, strides=[1, 1, 1, 1], padding='SAME') + b1
+        
+        conv1_output = tf.nn.relu(conv1)
+        
+        w2 = tf.get_variable("w2", shape=[3, 3, conv1_output.get_shape().as_list()[-1], n_filters[i]])
+        b2 = tf.get_variable("b2", shape=[n_filters[i]])
+        
+        conv2 = tf.nn.conv2d(conv1_output, w2, strides=[1, 1, 1, 1], padding='SAME') + b2
+        
+        output = tf.nn.relu(conv2)
+        
+        return output
