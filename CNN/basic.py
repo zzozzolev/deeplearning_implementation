@@ -4,22 +4,22 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 
-mnist = input_data.read_data_sets('tmp/data')
+mnist = input_data.read_data_sets('tmp/data', one_hot=True)
 
 # parameters
-lr_rate = 0.001
-batch_size = 1024
-train_steps = 100
-print_step = 10
+lr_rate = 0.0002
+batch_size = 256
+train_steps = 1000
+print_step = 100
 
 # network parameters
+n_input = mnist.train.images.shape[0]
 input_dim = mnist.train.images.shape[1]
 n_class = 10
 dropout = 0.9
 n_channel = 1
-n_filters = [n_channel, 32, 64]
-kernel_size = 3
-pool_kernel_size = 2
+n_filters = [32, 32, 64]
+n_hidden = [256, 64, 10]
 
 # graph input
 X = tf.placeholder(tf.float32, [None, input_dim])
