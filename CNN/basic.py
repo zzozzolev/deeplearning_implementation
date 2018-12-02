@@ -28,11 +28,13 @@ keep_prob = tf.placeholder(tf.float32)
 
 def conv2d(x, i):
     with tf.variable_scope('conv'+str(i)):
-        w = tf.Variable(tf.random_normal([kernel_size, kernel_size, n_filters[i], n_filters[i+1]]))
-        b = tf.Variable(tf.random_normal([n_filters[i+1]]))
-        conv = tf.nn.conv2d(x, w, strides=[1, kernel_size, kernel_size, 1], padding='SAME') + b
+        w = tf.get_variable("w", shape=[kernel_size, kernel_size, x.get_shape().as_list()[-1], n_filters[i]], 
+                                initializer=tf.contr1ib.layers.xavier_initializer())
+        b = tf.get_variable("b", shape=[n_filters[i]],
+                                initializer=tf.contrib.layers.xavier_initializer())
+        conv = tf.nn.conv2d(x, w, strides=[1, 1, 1, 1], padding='SAME') + b
         output = tf.nn.relu(conv)
-
+    
     return output
 
 
