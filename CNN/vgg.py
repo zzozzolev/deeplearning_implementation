@@ -58,3 +58,8 @@ def conv_two(x, i):
         output = tf.nn.relu(conv2)
         
         return output
+
+def max_pool2d(x):
+    max_pool = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+    
+    return max_pool
