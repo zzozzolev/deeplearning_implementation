@@ -119,3 +119,42 @@ loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, lab
 optimizer = tf.train.AdamOptimizer(lr_rate_placeholder).minimize(loss)
 
 acc = tf.reduce_mean(tf.to_float(tf.equal(tf.argmax(pred,1), tf.argmax(Y, 1))))
+
+init = tf.global_variables_initializer()
+saver = tf.train.Saver(max_to_keep=2)
+save_dir = './checkpoints/'
+project_name = 'vgg_net_n_filters32_n_hidden1024'
+save_dir = save_dir + project_name
+added_step = 0
+
+with tf.Session() as sess:
+    if added_step == 0:
+        sess.run(init)
+    else:
+        #saver.restore(sess, './checkpoints/vgg_net_n_filters4_n_hidden128_step_1000')
+    
+    for step in range(train_steps+1):
+        if step != 0 and step % lr_decay_step == 0:
+            lr_rate *= 10**-1
+        
+        x, y = mnist.train.next_batch(batch_size)
+        _, c = sess.run([optimizer, loss], 
+                        feed_dict={X: x, Y:y, keep_prob:dropout, lr_rate_placeholder:lr_rate})
+        
+        if step % print_step == 0:
+            print("step", step+added_step)
+            train_acc = sess.run(acc, 
+                                 feed_dict={X: x, Y:y, keep_prob:dropout, lr_rate_placeholder:lr_rate})
+            print("avg loss", c)
+            print("acc", train_acc)
+            
+            valid_x, valid_y = mnist.test.next_batch(batch_size)
+            valid_acc = sess.run(acc, 
+                                 feed_dict={X: x, Y:y, keep_prob:1.0, lr_rate_placeholder:lr_rate})
+            
+            print("test_acc", valid_acc)
+            print("-"*50)
+        
+        if step % save_step == 0:
+            saver.save(sess, save_dir+"step_"+str(step+added_step))
+        
