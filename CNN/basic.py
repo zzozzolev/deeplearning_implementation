@@ -109,10 +109,11 @@ with tf.Session() as sess:
 
         if step % print_step == 0:
             train_acc = sess.run(acc, feed_dict={X: x, Y: y, keep_prob:dropout})
-            print("avg loss", c / batch_size)
+            print("avg loss", c )
             print("acc", train_acc)
 
             valid_x, valid_y = mnist.test.next_batch(batch_size)
-            vaild_acc = sess.run(acc, feed_dict={X:valid_x, Y:valid_y, keep_prob:1.0})
+            valid_acc = sess.run(acc, feed_dict={X:valid_x, Y:valid_y, keep_prob:1.0})
 
-            print("valid_acc", valid_acc)
+            print("test_acc", valid_acc)
+            print("-----------------------")
