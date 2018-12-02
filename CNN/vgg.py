@@ -109,3 +109,13 @@ def vgg_net(x, dropout):
     output = fc(x, len(n_hidden)-1)
     
     return output
+
+X, Y, keep_prob, lr_rate_placeholder = get_placeholder(mnist.train.images, mnist.train.labels)
+
+logits = vgg_net(X, keep_prob)
+pred = tf.nn.softmax(logits)
+
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
+optimizer = tf.train.AdamOptimizer(lr_rate_placeholder).minimize(loss)
+
+acc = tf.reduce_mean(tf.to_float(tf.equal(tf.argmax(pred,1), tf.argmax(Y, 1))))
