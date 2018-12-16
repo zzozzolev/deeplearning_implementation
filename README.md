@@ -6,3 +6,4 @@
 - basic CNN
 - VGG Net
 - Inception
+- Res Net
