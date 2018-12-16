@@ -5,3 +5,4 @@
 - MLP
 - basic CNN
 - VGG Net
+- Inception
