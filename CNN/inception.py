@@ -205,4 +205,21 @@ preds = tf.nn.softmax(logits)
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
 optimizer = tf.train.AdamOptimizer(lr_rate_placeholder).minimize(loss)
 
-acc = tf.reduce_mean(tf.to_float(tf.equal(tf.argmax(pred, 1), tf.argmax(Y, 1)))) 
+acc = tf.reduce_mean(tf.to_float(tf.equal(tf.argmax(preds, 1), tf.argmax(Y, 1)))) 
+
+# train
+init = tf.global_variables_initializer()
+lr_rate = 0.0002
+with tf.Session() as sess:
+    sess.run(init)
+    
+    for step in range(train_steps):
+        x, y = mnist.train.next_batch(batch_size)
+        _, c = sess.run([optimizer, loss], feed_dict={X:x, Y:y, keep_prob:dropout, lr_rate_placeholder:lr_rate})
+        
+        if step % print_step == 0:
+            valid_x, valid_y = mnist.test.next_batch(batch_size)
+            test_acc = sess.run(acc, feed_dict={X:valid_x, Y:valid_y, keep_prob:1.0, lr_rate_placeholder:lr_rate})
+            print("step", step+1)
+            print("train_loss:", c)
+            print("test_acc:",test_acc)
