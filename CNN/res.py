@@ -139,4 +139,14 @@ def network(x, dropout, version='normal'):
     for i in range(len(n_hiddens)):
         x = fc(x, i, dropout)
     
-    return x 
+    return x
+
+X, Y, keep_prob = get_placeholder(mnist.train.images, mnist.train.labels)
+
+logits = network(X, keep_prob, 'bottelneck')
+preds = tf.nn.softmax(logits)
+
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=Y, logits=logits))
+optimizer = tf.train.AdamOptimizer(lr_rate).minimize(loss)
+
+acc = tf.reduce_mean(tf.to_float(tf.equal(tf.argmax(preds, -1), tf.argmax(Y, -1))))
