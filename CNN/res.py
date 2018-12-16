@@ -150,3 +150,22 @@ loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=Y, logits=l
 optimizer = tf.train.AdamOptimizer(lr_rate).minimize(loss)
 
 acc = tf.reduce_mean(tf.to_float(tf.equal(tf.argmax(preds, -1), tf.argmax(Y, -1))))
+
+# main
+init = tf.global_variables_initializer()
+
+with tf.Session() as sess:
+    sess.run(init)
+    
+    for step in (range(train_steps)):
+        x, y = mnist.train.next_batch(batch_size)
+        _, c = sess.run([optimizer, loss], feed_dict={X:x, Y:y, keep_prob:dropout})
+    
+        if step % print_step == 0:
+            print("step", step+1)
+            
+            valid_x, valid_y = mnist.test.next_batch(batch_size)
+            valid_acc = sess.run(acc, feed_dict={X:valid_x, Y:valid_y, keep_prob:1.0})
+            
+            print("train_loss:", c)
+            print("test_acc", valid_acc)
