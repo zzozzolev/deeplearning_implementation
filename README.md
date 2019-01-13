@@ -7,3 +7,4 @@
 - VGG Net
 - Inception
 - Res Net
+- RNN
