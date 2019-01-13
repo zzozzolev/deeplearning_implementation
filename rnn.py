@@ -85,3 +85,21 @@ def network(x, n_layer, num_steps, num_units, keep_prob):
     print(last_step_outputs)
     
     return last_step_outputs
+
+# train and test
+init = tf.global_variables_initializer()
+
+with tf.Session() as sess:
+    sess.run(init)
+    
+    for step in range(train_steps+1):
+        x, y = mnist.train.next_batch(batch_size)
+        _, c = sess.run([optimizer, loss], feed_dict={X: x, Y:y, keep_prob:dropout, lr_rate_placeholder:lr_rate})
+        
+        if step % print_step == 0:
+            print("steps:", step)
+            print("train_loss:", c)
+            
+            valid_x, valid_y = mnist.test.next_batch(batch_size)
+            valid_acc = sess.run(acc, feed_dict={X:valid_x, Y:valid_y, keep_prob:1.0})
+            print("test_acc:", valid_acc)
