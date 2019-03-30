@@ -96,3 +96,41 @@ g_optimizer = tf.train.AdamOptimizer(lr_rate).minimize(g_loss, var_list=g_var)
 
 d_real_avg = tf.reduce_mean(d_real)
 d_fake_avg = tf.reduce_mean(d_fake)
+
+train_steps = 700000
+start_step = 0
+print_step = 100
+save_step = 1000
+lr_rate = 0.0001
+
+# train
+save_dir = './checkpoints/gan'
+project_name = 'g_hidden{}_d_hidden{}_normal_1d_1g'.format('256_512_784', '784_256_1')
+init = tf.global_variables_initializer()
+saver = tf.train.Saver(max_to_keep=2)
+
+with tf.Session() as sess:
+    sess.run(init)
+    
+    for step in range(start_step, train_steps+1):
+        if start_step != 0 and step == start_step:
+            saver.restore(sess, "{}-{}".format(os.path.join(save_dir, project_name), step))
+        
+        x, _ = mnist.train.next_batch(batch_size)
+        
+        z = get_random_normal(batch_size, sample_dim)
+        _, d_cost = sess.run([d_optimizer, d_loss], feed_dict={X: x, Z:z, keep_prob:dropout})
+        _, g_cost = sess.run([g_optimizer, g_loss], feed_dict={Z:z, keep_prob:dropout})
+        
+        if step % print_step == 0:
+            print("step:", step)
+            print("train d_loss: {}, g_loss: {}".format(d_cost, g_cost))
+            test_x, _ = mnist.test.next_batch(batch_size)
+            
+            print("-"*80)
+    
+            samples = sess.run(fake_X, feed_dict={Z:z, keep_prob:1.0})
+            plot(samples)
+        
+        if step % save_step == 0:
+            saver.save(sess, os.path.join(save_dir, project_name), global_step=step)
