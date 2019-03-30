@@ -74,3 +74,25 @@ def discriminator(x, keep_prob, reuse):
         logits = mlp(x, keep_prob, d_hidden, 'discriminator')
         preds = tf.nn.sigmoid(logits)
         return preds
+
+# build graph
+tf.reset_default_graph()
+X, Z, keep_prob = get_placeholder(mnist.train.images, sample_dim)
+fake_X = generator(Z, keep_prob)
+
+d_real = discriminator(X, keep_prob, False)
+d_fake = discriminator(fake_X, keep_prob, True)
+
+# log(0)이 되서 무한대로 수렴하는 것을 막기 위해 epsilon을 더해줌
+d_loss = -tf.reduce_mean((tf.log(d_real) + tf.log(1 - d_fake)))
+g_loss = -tf.reduce_mean(tf.log(d_fake + epsilon))
+
+t_var = tf.trainable_variables()
+d_var = [var for var in t_var if 'discriminator' in var.name]
+g_var = [var for var in t_var if 'generator' in var.name]
+
+d_optimizer = tf.train.AdamOptimizer(lr_rate).minimize(d_loss, var_list=d_var)
+g_optimizer = tf.train.AdamOptimizer(lr_rate).minimize(g_loss, var_list=g_var)
+
+d_real_avg = tf.reduce_mean(d_real)
+d_fake_avg = tf.reduce_mean(d_fake)
