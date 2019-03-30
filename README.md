@@ -8,3 +8,5 @@
 - Inception
 - Res Net
 - RNN
+- GAN
+[Imgur](https://i.imgur.com/WkN3cbS.png)
